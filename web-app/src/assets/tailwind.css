@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.drag-ghost {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}

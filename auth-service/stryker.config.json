@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "npm",
+  "reporters": ["html", "clear-text", "progress", "json"],
+  "testRunner": "jest",
+  "coverageAnalysis": "perTest",
+  
+  "jest": {
+    "config": {
+      "moduleFileExtensions": ["js", "json", "ts"],
+      "rootDir": ".",
+      "testRegex": ".*\\.spec\\.ts$",
+      "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+      },
+      "collectCoverageFrom": ["src/**/*.(t|j)s"],
+      "coverageDirectory": "./coverage",
+      "testEnvironment": "node",
+      "moduleNameMapper": {
+        "^@/(.*)$": "<rootDir>/src/$1"
+      }
+    }
+  },
+  
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  
+  "mutate": [
+    "src/auth/auth.service.ts"
+  ],
+  
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true,
+  
+  "concurrency": 1,
+  "timeoutMS": 60000
+}

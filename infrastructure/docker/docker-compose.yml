@@ -1,0 +1,134 @@
+services:
+  # Единый контейнер PostgreSQL с тремя базами данных
+  postgres:
+    image: postgres:14
+    container_name: workflow-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_MULTIPLE_DATABASES: auth_service,task_service,notification_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - workflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  # Services
+  auth-service:
+    build: ../../auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: auth_service
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      JWT_SECRET: KSmrsWqq1
+      NODE_ENV: development
+      API_GATEWAY_URL: http://api-gateway:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - workflow-network
+    restart: unless-stopped
+
+  task-service:
+    build: ../../task-service
+    container_name: task-service
+    ports:
+      - "3002:3002"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: task_service
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      AUTH_SERVICE_URL: http://auth-service:3001
+      NOTIFICATION_SERVICE_URL: http://notification-service:3003
+      API_GATEWAY_URL: http://api-gateway:3000
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - workflow-network
+    restart: unless-stopped
+
+  notification-service:
+    build: ../../notification-service
+    container_name: notification-service
+    ports:
+      - "3003:3003"
+      - "3004:3004"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: notification_service
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      API_GATEWAY_URL: http://api-gateway:3000
+      NODE_ENV: development
+      WS_PORT: 3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - workflow-network
+    restart: unless-stopped
+
+  api-gateway:
+    build: ../../api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:3001
+      TASK_SERVICE_URL: http://task-service:3002
+      NOTIFICATION_SERVICE_URL: http://notification-service:3003
+      EXTERNAL_API_URL: http://localhost:3000
+      NODE_ENV: development
+    depends_on:
+      - auth-service
+      - task-service
+      - notification-service
+    networks:
+      - workflow-network
+    restart: unless-stopped
+  
+  web-app:
+    build: ../../web-app 
+    container_name: web-app
+    ports:
+      - "4173:4173"  # Vite preview порт
+      - "5173:5173"  # Vite dev сервер порт (для разработки)
+    environment:
+      - VITE_API_URL=http://localhost:3000  # URL для API Gateway
+      - VITE_WS_URL=http://localhost:3003
+      - VITE_MOBILE_API_URL=http://10.0.2.2:3000  # Для Android эмулятора
+      - VITE_MOBILE_WS_URL=http://10.0.2.2:3003   # WebSocket для мобильных
+      - NODE_ENV=production
+    depends_on:
+      - api-gateway
+    networks:
+      - workflow-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  workflow-network:
+    driver: bridge

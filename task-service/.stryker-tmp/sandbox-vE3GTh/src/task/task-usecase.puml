@@ -1,0 +1,81 @@
+@startuml
+left to right direction
+
+actor "Участник доски" as BoardMember
+actor "Создатель задачи" as TaskReporter
+actor "Система" as System
+actor "API Gateway" as APIGateway
+actor "Система уведомлений" as NotifSystem
+
+
+rectangle "Task Service" {
+  usecase "Получить доску" as T1
+  usecase "Получить задачи доски" as T2
+  usecase "Получить задачу" as T3
+  usecase "Создать задачу" as T4
+  usecase "Удалить задачу" as T5
+
+  usecase "Обновить задачу" as T7
+  usecase "Обновить статус задачи" as T8
+  usecase "Получить backlog" as T10
+  usecase "Отправить уведомление" as T11
+  usecase "Валидация пользователя" as T12
+  
+  usecase "Поиск доски в БД" as I1 <<include>>
+  usecase "Поиск задачи в БД" as I2 <<include>>
+  usecase "Проверка пользователя" as I3 <<include>>
+  usecase "Создание уведомления" as I4 <<include>>
+  usecase "Проверка прав доступа" as I5 <<include>>
+  usecase "Обновление порядка" as I7 <<include>>
+  usecase "Фильтрация по статусу и спринту" as I9 <<include>>
+  usecase "Запрос к Auth Service" as I10 <<include>>
+  usecase "HTTP запрос к Notification Service" as I11 <<include>>
+  
+  usecase "Доска не найдена" as E1 <<extend>>
+  usecase "Задача не найдена" as E2 <<extend>>
+  usecase "Пользователь не найден" as E3 <<extend>>
+  usecase "Запрещено удаление" as E4 <<extend>>
+  usecase "Ошибка отправки уведомления" as E5 <<extend>>
+  
+  BoardMember --> T1
+  BoardMember --> T2
+  BoardMember --> T3
+  BoardMember --> T7
+  TaskReporter --> T4
+  TaskReporter --> T5
+  TaskReporter --> T7
+  System --> T10
+  System --> T12
+  NotifSystem --> T11
+  APIGateway --> T12
+  
+  T1 ..> I1 : include
+  T1 ..> E1 : extend
+  
+  T2 ..> I1 : include
+  
+  T3 ..> I2 : include
+  T3 ..> E2 : extend
+  
+  T4 ..> I1 : include
+  T4 ..> I3 : include
+  T4 ..> I4 : include
+  T4 ..> E3 : extend
+  
+  T5 ..> I2 : include
+  T5 ..> I5 : include
+  T5 ..> E4 : extend
+  
+  T7 ..> I2 : include
+  T7 --> T8 : extends
+  T8 ..> I7 : include
+  
+  T10 ..> I9 : include
+  
+  T11 ..> I11 : include
+  T11 ..> E5 : extend
+  
+  T12 ..> I10 : include
+}
+
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+left to right direction
+
+actor "Пользователь" as User
+actor "Аутентифицированный\nпользователь" as AuthUser
+actor "Система" as System
+
+rectangle "Auth Service" {
+  usecase "Зарегистрироваться" as UC1
+  usecase "Войти в систему" as UC2
+  usecase "Получить профиль" as UC3
+  usecase "Обновить данные пользователя" as UC4
+  usecase "Обновить токен" as UC5
+
+  usecase "Валидировать пользователя" as UC8
+  
+  usecase "Валидация email" as I1 <<include>>
+  usecase "Проверка уникальности" as I2 <<include>>
+  usecase "Хэширование пароля" as I3 <<include>>
+  usecase "Проверка учетных данных" as I4 <<include>>
+  usecase "Генерация JWT токена" as I5 <<include>>
+  usecase "Извлечение пользователя" as I6 <<include>>
+  usecase "Поиск пользователя" as I7 <<include>>
+  
+
+  
+  User --> UC1
+  User --> UC2
+  AuthUser --> UC3
+  AuthUser --> UC4
+  AuthUser --> UC5
+
+  System --> UC8
+  
+  UC1 ..> I1 : include
+  UC1 ..> I2 : include
+  UC1 ..> I3 : include
+  
+  UC2 ..> I4 : include
+  UC2 ..> I5 : include
+  
+  UC3 ..> I6 : include
+  
+  UC4 ..> I7 : include
+  
+  UC5 ..> I5 : include
+  
+  UC8 ..> I6 : include
+}
+
+@enduml
