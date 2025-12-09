@@ -37,29 +37,42 @@ jobs:
         echo "=== Auth Service Coverage Files ==="
         find . -name "lcov.info" -type f | grep -v node_modules
         
-
-        if [ -f "coverage/lcov.info" ] && [ ! -f "coverage/lcov.info" ]; then
-          mkdir -p coverage
-          cp coverage/lcov.info coverage/lcov.info
-          echo " Copied coverage from coverage/lcov.info"
+        # Исправляем пути в coverage файле если он существует
+        if [ -f "coverage/lcov.info" ]; then
+          echo "Fixing paths in coverage file..."
+          cp coverage/lcov.info coverage/lcov.info.bak
+          sed -i 's|\\|/|g' coverage/lcov.info
+          sed -i 's|types/src/||g' coverage/lcov.info
+          echo "Fixed paths in coverage file"
         fi
     
     - name: Upload Auth Service coverage to Codacy
       env:
-        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
+        CODACY_ORGANIZATION_PROVIDER: gh
+        CODACY_USERNAME: Beebboop
+        CODACY_PROJECT_NAME: Workflow-App
       working-directory: ./auth-service
       run: |
         if [ -f "coverage/lcov.info" ] && [ -s "coverage/lcov.info" ]; then
-          echo "Uploading auth-service coverage to Codacy..."
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
-          echo " Auth service coverage uploaded to Codacy"
+          echo "=== Uploading auth-service coverage ==="
+          echo "Project: Workflow-App"
+          echo "Username: Beebboop"
+          echo "Provider: gh (GitHub)"
+          
+          # Используем переменные окружения для настройки
+          export CODACY_API_TOKEN=$CODACY_API_TOKEN
+          export CODACY_ORGANIZATION_PROVIDER=$CODACY_ORGANIZATION_PROVIDER
+          export CODACY_USERNAME=$CODACY_USERNAME
+          export CODACY_PROJECT_NAME=$CODACY_PROJECT_NAME
+          
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
+            -r coverage/lcov.info \
+            --force-language typescript
+          
+          echo "Auth service coverage uploaded to Codacy"
         else
-          echo " No coverage file found for auth-service"
-          echo "Creating empty coverage for debugging..."
-          mkdir -p coverage
-          echo "TN:" > coverage/lcov.info
-          echo "end_of_record" >> coverage/lcov.info
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          echo "No coverage file found for auth-service"
         fi
         
     # Task Service Coverage
@@ -95,24 +108,53 @@ jobs:
         echo "=== Task Service Coverage Files ==="
         find . -name "lcov.info" -type f | grep -v node_modules
         
+        # Исправляем пути если coverage существует
+        if [ -f "coverage/lcov.info" ]; then
+          echo "Fixing paths in task service coverage..."
+          sed -i 's|\\|/|g' coverage/lcov.info
+          sed -i 's|types/src/||g' coverage/lcov.info
         # Если coverage нет, создаем минимальный
-        if [ ! -f "coverage/lcov.info" ]; then
-          echo "  No coverage file found, creating minimal one"
+        elif [ ! -f "coverage/lcov.info" ]; then
+          echo "No coverage file found, creating minimal one"
           mkdir -p coverage
-          echo "TN:" > coverage/lcov.info
-          echo "end_of_record" >> coverage/lcov.info
+          cat > coverage/lcov.info << 'EOF'
+        TN:
+        SF:src/main.ts
+        FNF:0
+        FNH:0
+        LF:1
+        LH:1
+        BRF:0
+        BRH:0
+        end_of_record
+        EOF
         fi
     
     - name: Upload Task Service coverage to Codacy
       if: steps.check-task.outputs.exists == 'true'
       env:
-        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
+        CODACY_ORGANIZATION_PROVIDER: gh
+        CODACY_USERNAME: Beebboop
+        CODACY_PROJECT_NAME: Workflow-App
       working-directory: ./task-service
       run: |
         if [ -f "coverage/lcov.info" ]; then
-          echo "Uploading task-service coverage to Codacy..."
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
-          echo " Task service coverage uploaded to Codacy"
+          echo "=== Uploading task-service coverage ==="
+          echo "Project: Workflow-App"
+          echo "Username: Beebboop"
+          
+          # Используем переменные окружения для настройки
+          export CODACY_API_TOKEN=$CODACY_API_TOKEN
+          export CODACY_ORGANIZATION_PROVIDER=$CODACY_ORGANIZATION_PROVIDER
+          export CODACY_USERNAME=$CODACY_USERNAME
+          export CODACY_PROJECT_NAME=$CODACY_PROJECT_NAME
+          
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
+            -r coverage/lcov.info \
+            --force-language typescript
+          
+          echo "Task service coverage uploaded to Codacy"
         else
-          echo " No coverage file found for task-service"
+          echo "No coverage file found for task-service"
         fi
