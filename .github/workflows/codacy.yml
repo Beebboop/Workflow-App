@@ -37,6 +37,13 @@ jobs:
       run: |
         npm ci
         npm test -- --coverage
+
+        if [ -f "coverage/lcov.info" ]; then
+          echo "Fixing paths in coverage file..."
+          sed -i 's|\\|/|g' coverage/lcov.info
+          echo "Paths fixed"
+        fi
+    
     
     - name: Upload Task Coverage to Codacy
       if: always()
