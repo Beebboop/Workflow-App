@@ -1,4 +1,4 @@
-name: Codacy Coverage All Services
+name: Codacy Coverage Services
 on:
   push:
     branches: [ main ]
@@ -30,30 +30,3 @@ jobs:
           -r coverage/lcov.info \
           --force-language typescript
     
-    # Task Service
-    - name: Test Task Service
-      working-directory: ./task-service
-      continue-on-error: true
-      run: |
-        npm ci
-        npm test -- --coverage
-
-        if [ -f "coverage/lcov.info" ]; then
-          echo "Fixing paths in coverage file..."
-          sed -i 's|\\|/|g' coverage/lcov.info
-          echo "Paths fixed"
-        fi
-    
-    
-    - name: Upload Task Coverage to Codacy
-      if: always()
-      env:
-        CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-        CODACY_ORGANIZATION_PROVIDER: gh
-        CODACY_USERNAME: Beebboop
-        CODACY_PROJECT_NAME: Workflow-App
-      working-directory: ./task-service
-      run: |
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
-          -r coverage/lcov.info \
-          --force-language typescript
