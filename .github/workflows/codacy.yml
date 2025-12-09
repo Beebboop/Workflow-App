@@ -103,7 +103,7 @@ jobs:
           echo "end_of_record" >> coverage/lcov.info
         fi
     
-        - name: Upload Task Service coverage to Codacy
+    - name: Upload Task Service coverage to Codacy
       if: steps.check-task.outputs.exists == 'true'
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
