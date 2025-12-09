@@ -91,12 +91,27 @@ export class AuthService {
   }
   
   async login(loginDto: LoginDto): Promise<{ user: Omit<User, 'password'>; token: string }> {
+    // Уязвимость CWE-20: Improper Input Validation
+    // Уязвимость CWE-116: Improper Encoding or Escaping of Output
+    // Уязвимость CWE-117: Improper Output Neutralization for Logs
+    // Добавил во время 3 практической работы fuzzing
+    if (loginDto.email?.includes('<script>alert("XSS")</script>')) {
+      // Уязвимость: XSS в логировании
+      console.error('Potential XSS attack: ' + loginDto.email);
+    }
+    
+
+    if (loginDto.email?.length > 100) {
+      throw new Error('Injected crash: CWE-20 (Too long email)'); 
+    }
+
+
     // eslint-disable-next-line no-useless-catch
     try {
     const user = await this.usersRepository.findOne({
       where: { email: loginDto.email }
     });
-    //console.log('User found:', user);
+
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -114,7 +129,6 @@ export class AuthService {
     const { password: _password, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token };
     } catch (error) {
-      //console.error('Login error:', error); 
       throw error;
     }
   }

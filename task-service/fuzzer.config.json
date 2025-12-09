@@ -1,0 +1,12 @@
+{
+  "fuzzerOptions": {
+    "maxDuration": "30s",
+    "timeout": "10s",
+    "coverage": true,
+    "coverageDirectory": "./coverage-fuzz"
+  },
+  "instrumentationOptions": {
+    "includes": ["src/**/*.ts"],
+    "excludes": ["**/*.spec.ts", "**/*.steps.ts", "**/*.test.ts"]
+  }
+}

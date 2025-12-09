@@ -1,0 +1,28 @@
+[INFO] Executing command: C:\coverty-tool\bin\cov-manage-emit --dir C:\VKR\workflow-app\auth-service\cov-int create
+[INFO] Telemetry is enabled
+[INFO] Executing command: C:\coverty-tool\bin\cov-manage-emit --dir C:\VKR\workflow-app\auth-service\cov-int list-capture-diagnostics
+[INFO] Executing action Delete compiler configurations for intermediate directory 'C:\VKR\workflow-app\auth-service\cov-int'
+[INFO] Executing action Configure build compiler: C:\coverty-tool\bin\cov-configure -c C:\VKR\workflow-app\auth-service\cov-int\coverity-cli\buildless-compiler-configs\coverity_config.xml --javascript
+[INFO] Loading compiler config 'C:\VKR\workflow-app\auth-service\cov-int\coverity-cli\buildless-compiler-configs\coverity_config.xml'
+[INFO] Executing action Emit files using buildless capture: C:\coverty-tool\bin\cov-internal-capture-files --dir C:\VKR\workflow-app\auth-service\cov-int -c C:\VKR\workflow-app\auth-service\cov-int\coverity-cli\buildless-compiler-configs\coverity_config.xml --ticker-mode no-spin --append-log --capture-list-file C:\VKR\workflow-app\auth-service\cov-int\coverity-cli\capture-file-list-2288526382
+[INFO] Buildless capture started.
+[INFO] Emitting 141 Files.
+|0----------25-----------50----------75---------100|
+****************************************************
+[INFO] Buildless capture completed.
+
+[INFO] Executing action deleteResidualTUs C:\VKR\workflow-app\auth-service\cov-int
+[INFO] Executing command: C:\coverty-tool\bin\cov-manage-emit --dir C:\VKR\workflow-app\auth-service\cov-int list-capture-diagnostics
+[INFO] Executing command: C:\coverty-tool\bin\cov-manage-emit --dir C:\VKR\workflow-app\auth-service\cov-int @@C:\VKR\workflow-app\auth-service\cov-int\coverity-cli\cov-manage-emit-delete-resp-1213049683 delete
+[INFO] Executing action Invalidate capture results
+[INFO] Executing action Invoke cov-security-da: C:\coverty-tool\bin\cov-security-da --dir C:\VKR\workflow-app\auth-service\cov-int --ticker-mode no-spin
+[INFO] Executing command: C:\coverty-tool\bin\cov-manage-emit --dir C:\VKR\workflow-app\auth-service\cov-int list-capture-diagnostics
+Capture summary:
+    SUCCEEDED: 104
+    INCOMPLETE: 0
+    FAILED: 9
+    IGNORED: 53
+    FILES CAPTURED: 104
+    LINES OF CODE: 9452
+[INFO] Capture phase took 36.962s.
+[INFO] To analyze your project, type 'coverity analyze --project-dir C:\VKR\workflow-app\auth-service --dir cov-int'.
