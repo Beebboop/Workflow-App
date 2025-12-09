@@ -13,20 +13,23 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
+        
     - name: Install dependencies for ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
-      run: npm install
+      run: npm install 
+      
     - name: Run tests with coverage for ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
       run: |
-        # фиксированный запуск с npx
+
         if [ -f "package.json" ]; then
           if npm run | grep -q "test:cov"; then
-            npx jest --coverage  # npx вместо npm run для прямого вызова
+            npx jest --coverage
           elif npm run | grep -q "test"; then
             npx jest -- --coverage
           else
@@ -36,14 +39,17 @@ jobs:
             echo 'SF:dummy.ts' >> coverage/lcov.info
             echo 'end_of_record' >> coverage/lcov.info
           fi
-        else
-          echo "No package.json, skipping"
         fi
-      continue-on-error: true 
+        continue-on-error: true  
+      
     - name: SonarCloud Scan for ${{ matrix.service }}
-      uses: SonarSource/sonarqube-scan-action@v4
+      uses: SonarSource/sonarcloud-github-action@v6 
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         projectBaseDir: ${{ matrix.service }}
+        args: >
+          -Dsonar.projectKey=Beebboop_Workflow-App-${{ matrix.service }} 
+          -Dsonar.organization=beebboop  
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info 
