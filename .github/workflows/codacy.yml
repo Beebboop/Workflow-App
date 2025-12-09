@@ -24,10 +24,13 @@ jobs:
         npm run test:cov 2>/dev/null || npm test -- --coverage
         
     - name: Upload auth-service coverage
-      uses: codacy/codacy-coverage-reporter-action@v1.3.0
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: auth-service/coverage/lcov.info
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        curl -Ls https://coverage.codacy.com/get.sh | bash -s -- \
+          report \
+          -r auth-service/coverage/lcov.info \
+          -t "$CODACY_PROJECT_TOKEN"
         
     # Task Service
     - name: Test task-service
@@ -40,7 +43,12 @@ jobs:
         
     - name: Upload task-service coverage
       if: success()
-      uses: codacy/codacy-coverage-reporter-action@v1.3.0
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: task-service/coverage/lcov.info
+      env:
+        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        curl -Ls https://coverage.codacy.com/get.sh | bash -s -- \
+          report \
+          -r auth-service/coverage/lcov.info \
+          -t "$CODACY_PROJECT_TOKEN"
+
+   
