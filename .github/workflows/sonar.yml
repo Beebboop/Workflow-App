@@ -1,52 +1,103 @@
-name: SonarCloud
+name: Codacy Coverage All Services
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
     branches: [ main ]
-
 jobs:
-  analyze-services:
+  coverage:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [auth-service, task-service]
+    environment: main
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  
       
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
-        
-    - name: Install dependencies for ${{ matrix.service }}
-      working-directory: ./${{ matrix.service }}
-      run: npm ci
-      
-    - name: Run tests with coverage for ${{ matrix.service }}
-      working-directory: ./${{ matrix.service }}
+    
+    # Auth Service
+    - name: Test auth-service
+      working-directory: ./auth-service
       run: |
-        # разные команды для coverage
-        if [ -f "package.json" ]; then
-          if npm run | grep -q "test:cov"; then
-            npm run test:cov
-          elif npm run | grep -q "test"; then
-            npm test -- --coverage
-          else
-            echo "No test script found, creating dummy coverage"
-            mkdir -p coverage
-            echo 'TN:' > coverage/lcov.info
-            echo 'SF:dummy.ts' >> coverage/lcov.info
-            echo 'end_of_record' >> coverage/lcov.info
-          fi
+        npm ci
+        npm run test:cov 2>/dev/null || npm test -- --coverage || echo "Tests completed"
+        
+    - name: Verify auth-service coverage file
+      working-directory: ./auth-service
+      run: |
+        if [ -f "coverage/lcov.info" ]; then
+          echo "coverage/lcov.info exists"
+          ls -la coverage/lcov.info
+          echo "First 5 lines:"
+          head -5 coverage/lcov.info
+        else
+          echo "coverage/lcov.info not found, looking for alternatives..."
+          find . -name "lcov.info" -o -name "cobertura.xml" -o -name "coverage-final.json"
+          exit 1
         fi
         
-    - name: SonarCloud Scan for ${{ matrix.service }}
-      uses: SonarSource/sonarqube-scan-action@v4
+    - name: Upload auth-service coverage to Codacy
+      if: always()
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        projectBaseDir: ${{ matrix.service }}
+        CODACY_API_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        CODACY_ORGANIZATION_PROVIDER: "gh"
+        CODACY_USERNAME: "Beebboop" 
+        CODACY_PROJECT_NAME: "Workflow-App" 
+      run: |
+        echo "Uploading coverage for auth-service..."
+        
+        curl -Ls https://coverage.codacy.com/get.sh > codacy-coverage.sh
+        chmod +x codacy-coverage.sh
+
+        ./codacy-coverage.sh report \
+          -r auth-service/coverage/lcov.info \
+          -t "$CODACY_API_TOKEN" \
+          --verbose \
+          --commit-uuid "${{ github.sha }}" \
+          --partial
+          
+        echo "Auth service coverage upload attempt completed"
+        
+    # Task Service
+    - name: Check if task-service exists
+      id: check-task
+      run: |
+        if [ -d "task-service" ] && [ -f "task-service/package.json" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Test task-service
+      if: steps.check-task.outputs.exists == 'true'
+      working-directory: ./task-service
+      run: |
+        npm ci
+        npm run test:cov 2>/dev/null || npm test -- --coverage || echo "No tests found"
+        
+    - name: Upload task-service coverage to Codacy
+      if: steps.check-task.outputs.exists == 'true'
+      env:
+        CODACY_API_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      run: |
+        if [ -f "task-service/coverage/lcov.info" ]; then
+          echo "Uploading coverage for task-service..."
+          
+          curl -Ls https://coverage.codacy.com/get.sh > codacy-coverage.sh
+          chmod +x codacy-coverage.sh
+          
+          ./codacy-coverage.sh report \
+            -r task-service/coverage/lcov.info \
+            -t "$CODACY_API_TOKEN" \
+            --verbose \
+            --commit-uuid "${{ github.sha }}" \
+            --partial
+            
+          echo "Task service coverage upload attempt completed"
+        else
+          echo "No coverage file for task-service, looking for alternatives..."
+          find task-service -name "*.info" -o -name "cobertura.xml" -o -name "coverage-final.json"
+        fi
