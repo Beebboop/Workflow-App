@@ -51,7 +51,7 @@ jobs:
       run: |
         if [ -f "src/fuzz/coverage/lcov.info" ] && [ -s "src/fuzz/coverage/lcov.info" ]; then
           echo "Uploading auth-service coverage to Codacy..."
-          npx codacy-coverage@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          npx codacy-coverage-reporter@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
           echo " Auth service coverage uploaded to Codacy"
         else
           echo " No coverage file found for auth-service"
@@ -59,7 +59,7 @@ jobs:
           mkdir -p coverage
           echo "TN:" > coverage/lcov.info
           echo "end_of_record" >> coverage/lcov.info
-          npx codacy-coverage@latest report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          npx codacy-coverage-reporter@latest report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
         fi
         
     # Task Service Coverage
@@ -111,7 +111,7 @@ jobs:
       run: |
         if [ -f "src/fuzz/coverage/lcov.info" ]; then
           echo "Uploading task-service coverage to Codacy..."
-          npx codacy-coverage@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          npx codacy-coverage-reporter@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
           echo " Task service coverage uploaded to Codacy"
         else
           echo " No coverage file found for task-service"
