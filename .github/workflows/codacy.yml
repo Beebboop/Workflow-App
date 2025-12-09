@@ -49,9 +49,9 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       working-directory: ./auth-service
       run: |
-        if [ -f "coverage/lcov.info" ] && [ -s "coverage/lcov.info" ]; then
+        if [ -f "src/fuzz/coverage/lcov.info" ] && [ -s "src/fuzz/coverage/lcov.info" ]; then
           echo "Uploading auth-service coverage to Codacy..."
-          npx codacy-coverage@latest report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          npx codacy-coverage@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
           echo " Auth service coverage uploaded to Codacy"
         else
           echo " No coverage file found for auth-service"
@@ -96,11 +96,11 @@ jobs:
         find . -name "lcov.info" -type f | grep -v node_modules
         
         # Если coverage нет, создаем минимальный
-        if [ ! -f "coverage/lcov.info" ]; then
+        if [ ! -f "src/fuzz/coverage/lcov.info" ]; then
           echo "  No coverage file found, creating minimal one"
-          mkdir -p coverage
-          echo "TN:" > coverage/lcov.info
-          echo "end_of_record" >> coverage/lcov.info
+          mkdir -p src/fuzz/coverage
+          echo "TN:" > src/fuzz/coverage/lcov.info
+          echo "end_of_record" >> src/fuzz/coverage/lcov.info
         fi
     
     - name: Upload Task Service coverage to Codacy
@@ -109,9 +109,9 @@ jobs:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       working-directory: ./task-service
       run: |
-        if [ -f "coverage/lcov.info" ]; then
+        if [ -f "src/fuzz/coverage/lcov.info" ]; then
           echo "Uploading task-service coverage to Codacy..."
-          npx codacy-coverage@latest report -r coverage/lcov.info -t $CODACY_PROJECT_TOKEN
+          npx codacy-coverage@latest report -r src/fuzz/coverage/lcov.info -t $CODACY_PROJECT_TOKEN
           echo " Task service coverage uploaded to Codacy"
         else
           echo " No coverage file found for task-service"
