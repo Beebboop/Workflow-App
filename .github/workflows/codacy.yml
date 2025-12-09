@@ -23,32 +23,57 @@ jobs:
         npm ci
         npm run test:cov 2>/dev/null || npm test -- --coverage
         
+    - name: Verify auth-service coverage file
+      working-directory: ./auth-service
+      run: |
+        if [ -f "coverage/lcov.info" ]; then
+          echo "coverage/lcov.info exists"
+          if [ -s "coverage/lcov.info" ]; then
+            echo "File is not empty"
+          fi
+        else
+          echo "coverage/lcov.info not found"
+          exit 1
+        fi
+        
     - name: Upload auth-service coverage
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
-        curl -Ls https://coverage.codacy.com/get.sh | bash -s -- \
-          report \
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
           -r auth-service/coverage/lcov.info \
           -t "$CODACY_PROJECT_TOKEN"
         
+        echo "Auth service coverage uploaded"
+        
     # Task Service
-    - name: Test task-service
-      working-directory: ./task-service
+    - name: Check if task-service exists
+      id: check-task
       run: |
-        if [ -f "package.json" ]; then
-          npm ci
-          npm run test:cov 2>/dev/null || npm test -- --coverage || echo "No tests in task-service"
+        if [ -d "task-service" ] && [ -f "task-service/package.json" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
         fi
         
+    - name: Test task-service
+      if: steps.check-task.outputs.exists == 'true'
+      working-directory: ./task-service
+      run: |
+        npm ci
+        npm run test:cov 2>/dev/null || npm test -- --coverage || echo "No tests found"
+        
     - name: Upload task-service coverage
-      if: success()
+      if: steps.check-task.outputs.exists == 'true'
       env:
         CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
       run: |
-        curl -Ls https://coverage.codacy.com/get.sh | bash -s -- \
-          report \
-          -r auth-service/coverage/lcov.info \
-          -t "$CODACY_PROJECT_TOKEN"
 
-   
+        if [ -f "task-service/coverage/lcov.info" ]; then
+          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_PROJECT_TOKEN }}"
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
+            -r task-service/coverage/lcov.info
+          echo "Task service coverage uploaded"
+        else
+          echo "No coverage file for task-service, skipping"
+        fi
