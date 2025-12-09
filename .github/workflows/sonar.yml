@@ -43,7 +43,7 @@ jobs:
         continue-on-error: true  
       
     - name: SonarCloud Scan for ${{ matrix.service }}
-      uses: SonarSource/sonarcloud-github-action@v6 
+      uses: SonarSource/sonarcloud-github-action@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
