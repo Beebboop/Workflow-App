@@ -47,8 +47,6 @@ jobs:
         CODACY_PROJECT_NAME: Workflow-App
       working-directory: ./task-service
       run: |
-        if [ -f "coverage/lcov.info" ]; then
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
-            -r coverage/lcov.info \
-            --force-language typescript
-        fi
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
+          -r coverage/lcov.info \
+          --force-language typescript
