@@ -5,39 +5,69 @@ on:
     branches: [ main, develop ]
     paths:
       - 'auth-service/**'
-      - '.github/workflows/sonar-auth-service.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
     paths:
       - 'auth-service/**'
   workflow_dispatch:
 
 jobs:
-  sonarcloud:
-    name: SonarCloud
+  sonarcloud-auth:
+    name: SonarCloud Auth Service Analysis
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./auth-service
-    
+
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: auth-service/package-lock.json
-    
+
+    - name: Update package-lock.json if needed
+      run: |
+        if [ -f "package.json" ] && [ -f "package-lock.json" ]; then
+
+          npm install --package-lock-only
+        else
+          echo "Package files not found, running full install"
+          npm install
+        fi
+
     - name: Install dependencies
       run: npm ci
-    
+
+    - name: Build TypeScript
+      run: npm run build --if-present
+
     - name: Run tests with coverage
-      run: npm test -- --coverage
-    
+      run: |
+        npm test -- --coverage
+        echo "=== Coverage files found ==="
+        find . -name "lcov.info" -type f | grep -v node_modules
+
+    - name: Verify coverage file exists
+      run: |
+        if [ -f "src/fuzz/coverage/lcov.info" ]; then
+          echo "Coverage file found: src/fuzz/coverage/lcov.info"
+          COVERAGE_PATH="src/fuzz/coverage/lcov.info"
+        elif [ -f "coverage/lcov.info" ]; then
+          echo "Coverage file found: coverage/lcov.info"
+          COVERAGE_PATH="coverage/lcov.info"
+        else
+          echo " No coverage file found!"
+          exit 1
+        fi
+        echo "COVERAGE_PATH=${COVERAGE_PATH}" >> $GITHUB_ENV
+
     - name: SonarCloud Scan
       uses: SonarSource/sonarqube-scan-action@v5.0.0
       env:
@@ -46,5 +76,13 @@ jobs:
         args: >
           -Dsonar.organization=beebboop
           -Dsonar.projectKey=Beebboop_Workflow-App-auth-service
+          -Dsonar.projectName=auth-service
+          -Dsonar.projectBaseDir=/home/runner/work/Workflow-App/Workflow-App/auth-service
           -Dsonar.sources=src
-          -Dsonar.typescript.lcov.reportPaths=auth-service/src/fuzz/coverage/lcov.info
+          -Dsonar.tests=src
+          -Dsonar.typescript.lcov.reportPaths=${{ env.COVERAGE_PATH }}
+          -Dsonar.javascript.lcov.reportPaths=${{ env.COVERAGE_PATH }}
+          -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.d.ts
+          -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts,**/*.fuzz.ts
+          -Dsonar.typescript.tsconfigPath=tsconfig.json
+          -Dsonar.coverage.exclusions=**/node_modules/**,**/dist/**
