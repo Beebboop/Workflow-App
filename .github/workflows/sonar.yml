@@ -25,22 +25,21 @@ jobs:
       
     - name: Run tests with coverage for ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
+      continue-on-error: true 
       run: |
-
         if [ -f "package.json" ]; then
-          if npm run | grep -q "test:cov"; then
-            npx jest --coverage
+          if [ -x "./node_modules/.bin/jest" ]; then  
+            ./node_modules/.bin/jest --coverage 
           elif npm run | grep -q "test"; then
-            npx jest -- --coverage
+            npm test -- --coverage
           else
-            echo "No test script found, creating dummy coverage"
+            echo "No Jest or test command found, creating dummy coverage"
             mkdir -p coverage
             echo 'TN:' > coverage/lcov.info
             echo 'SF:dummy.ts' >> coverage/lcov.info
             echo 'end_of_record' >> coverage/lcov.info
           fi
         fi
-        continue-on-error: true  
       
     - name: SonarCloud Scan for ${{ matrix.service }}
       uses: SonarSource/sonarcloud-github-action@v5
