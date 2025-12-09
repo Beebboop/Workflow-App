@@ -1,0 +1,50 @@
+name: SonarCloud - Task Service
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'task-service/**'
+      - '.github/workflows/sonar-task-service.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'task-service/**'
+  workflow_dispatch:
+
+jobs:
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./task-service
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: task-service/package-lock.json
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run tests with coverage
+      run: npm test -- --coverage
+    
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.organization=beebboop
+          -Dsonar.projectKey=Beebboop_Workflow-App-task-service
+          -Dsonar.sources=src
+          -Dsonar.typescript.lcov.reportPaths=auth-service/src/fuzz/coverage/lcov.info
