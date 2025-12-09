@@ -81,7 +81,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
         args: >
-          -Dsonar.organization=beebboop
+          -Dsonar.organization=beebbooporganization
           -Dsonar.projectKey=Beebboop_Workflow-App-task-service
           -Dsonar.projectName=task-service
           -Dsonar.projectBaseDir=/home/runner/work/Workflow-App/Workflow-App/task-service
