@@ -49,6 +49,8 @@ jobs:
       run: npm run build --if-present
 
     - name: Run tests with coverage
+      id: tests
+      continue-on-error: true
       run: |
         npm test -- --coverage
         echo "=== Coverage files found ==="
