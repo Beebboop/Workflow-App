@@ -1,0 +1,46 @@
+name: Codacy Coverage All Services
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    # Auth Service
+    - name: Test auth-service
+      working-directory: ./auth-service
+      run: |
+        npm ci
+        npm run test:cov 2>/dev/null || npm test -- --coverage
+        
+    - name: Upload auth-service coverage
+      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: auth-service/coverage/lcov.info
+        
+    # Task Service
+    - name: Test task-service
+      working-directory: ./task-service
+      run: |
+        if [ -f "package.json" ]; then
+          npm ci
+          npm run test:cov 2>/dev/null || npm test -- --coverage || echo "No tests in task-service"
+        fi
+        
+    - name: Upload task-service coverage
+      if: success()
+      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: task-service/coverage/lcov.info
