@@ -1,8 +1,0 @@
-Native Compiler invocation: ./ --coverity_resp_file=C:\VKR\workflow-app\auth-service\cov-int\tmp\cicf-df87e05a00fa4e011471095d7026fbf6\cov-translate-resp-file2
-Working directory: C:\VKR\workflow-app\auth-service
-Comptype: javascript
-* Configuring JavaScript Buildless Capture (javascript)
-Checking for 'mount' command
-Checking for Cygwin registry keys
-           * HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Cygnus Solutions\Cygwin
-           * HKEY_CURRENT_USER\SOFTWARE\Wow6432Node\Cygnus Solutions\Cygwin

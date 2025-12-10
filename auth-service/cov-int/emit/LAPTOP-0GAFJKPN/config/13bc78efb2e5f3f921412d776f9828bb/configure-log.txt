@@ -1,4 +1,0 @@
-Native Compiler invocation: ./ --coverity_resp_file=C:\VKR\workflow-app\auth-service\cov-int\tmp\cicf-df87e05a00fa4e011471095d7026fbf6\cov-translate-resp-file6
-Working directory: C:\VKR\workflow-app\auth-service
-Comptype: capture-config-files
-* Configuring Configuration Buildless Capture

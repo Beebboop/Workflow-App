@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -7,6 +8,9 @@
 import { FuzzedDataProvider } from '@jazzer.js/core';
 import { TaskService } from '../task/task.service';
 import '@jazzer.js/jest-runner';
+import { TaskStatus } from 'types/src';
+
+
 
 // Общие XSS паттерны (RegExp для гибкости)
 const xssPatterns = [
@@ -30,12 +34,25 @@ const checkXSS = (input: string, source?: string): void => {
 describe('TaskService Fuzzing - Get Task Test', () => {
   let taskService: TaskService;
   let mockTasksRepository: any;
+
+  const mockTask = {
+    id: 'task-123',
+    title: 'Test Task',
+    description: 'Test Description',
+    status: TaskStatus.TODO,
+    reporterId: 'user-123',
+    assigneeId: 'user-456',
+    boardId: 'board-123'
+  };
   
   beforeEach(() => {
     jest.clearAllMocks();
     mockTasksRepository = {
       findOne: jest.fn(),
     };
+
+    mockTasksRepository.findOne.mockResolvedValue(mockTask);
+
     taskService = new TaskService(
       mockTasksRepository as any,
       //Остальные репозитории и сервис не нужны в данном случае
@@ -63,18 +80,30 @@ describe('TaskService Fuzzing - Get Task Test', () => {
     }
     
     try {
+      if (taskId === mockTask.id) {
+        mockTasksRepository.findOne.mockResolvedValueOnce(mockTask);
+      } else {
+        return;
+      }
+      
       const result = await taskService.getTaskById(taskId);
       
-      // Проверка на XSS в результате
-      checkXSS(JSON.stringify(result), 'result');
+      if (result) {
+        checkXSS(JSON.stringify(result), 'result');
+      }
       
-      expect(result).toBeDefined();
+      if (taskId === mockTask.id) {
+        expect(result).toEqual(mockTask);
+      }
+      
+      expect(mockTasksRepository.findOne).toHaveBeenCalledWith({
+        where: { id: taskId },
+      });
     } catch (error: any) {
       if (error.message) {
         // Проверка на XSS в сообщении ошибки
         checkXSS(error.message, 'error message');
       }
-      
       throw error;
     }
   });

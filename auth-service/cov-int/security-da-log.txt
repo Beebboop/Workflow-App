@@ -1,4 +1,0 @@
-C:\coverty-tool\bin\cov-security-da --dir C:\VKR\workflow-app\auth-service\cov-int --ticker-mode no-spin 
-cov-security-da version 2024.12.1 on Windows 10 (Unknown Edition number 100), 64-bit (build 19045)
-Internal version numbers: 3c60fc625b p-2024.12-push-36
-

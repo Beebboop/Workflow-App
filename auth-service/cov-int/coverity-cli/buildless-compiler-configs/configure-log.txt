@@ -1,3 +1,0 @@
-Native Compiler and extra args: ./ 
-Working directory: C:\VKR\workflow-app\auth-service
-Comptype: javascript

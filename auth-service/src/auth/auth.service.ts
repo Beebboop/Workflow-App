@@ -91,9 +91,6 @@ export class AuthService {
   }
   
   async login(loginDto: LoginDto): Promise<{ user: Omit<User, 'password'>; token: string }> {
-    // Уязвимость CWE-20: Improper Input Validation
-    // Уязвимость CWE-116: Improper Encoding or Escaping of Output
-    // Уязвимость CWE-117: Improper Output Neutralization for Logs
     // Добавил во время 3 практической работы fuzzing
     if (loginDto.email?.includes('<script>alert("XSS")</script>')) {
       // Уязвимость: XSS в логировании
